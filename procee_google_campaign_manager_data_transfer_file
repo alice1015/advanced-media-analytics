@@ -48,7 +48,6 @@ time_lag = event_time - interaction_time
 
 time_lag_seconds = time_lag / np.timedelta64(1,'s')
 
-
 # Create a variable for each columns, and generate a new dataframe adding time_lag_seconds
 
 campaign_id = be_uk["Campaign ID"]
