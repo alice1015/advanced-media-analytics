@@ -1,0 +1,68 @@
+# Import Pandas & Numpy
+
+import pandas as pd
+
+import numpy as np
+
+# Read your Data Transfer File (floodlight activity log) and check if the import is successful
+
+raw = pd.read_csv('dcm_advertiserxxxxxxx_xxxxxxx_activity.csv.gz', compression='gzip', header=0, sep=',', error_bad_lines = False)
+
+# Extract columns that you would need for any test, and create a data frame
+
+raw_needed_columns = pd.DataFrame([raw['Event Time'], raw['Interaction Time'], raw['Campaign ID'], raw['Event Sub-Type']])
+
+columns = pd.DataFrame.transpose(raw_needed_columns)
+
+# Extract campaigns that you would need for the analysis
+
+y_campaign = columns['Campaign ID'] == yyyyyyyy
+
+z_campaign = columns['Campaign ID'] == zzzzzzzz
+
+# Create 2 separate dataframes for each campaign
+
+y_only = columns[y_campaign]
+
+z_only = columns[z_campaign]
+
+# Check length of each campaign_dataframe & the concatenated_campaign_dataframe
+
+len(y_only)
+
+len(z_only)
+
+y_z = pd.concat([y_only, z_only])
+
+len(y_z)
+
+# Convert Unix-Code timestamp to datetime
+
+event_time = pd.to_datetime(y_z['Event Time'], unit = 'us')
+
+interaction_time = pd.to_datetime(y_z['Interaction Time'], unit = 'us')
+
+# Calculate the time lag between event_time and interaction_time, and convert it into seconds
+
+time_lag = event_time - interaction_time
+
+time_lag_seconds = time_lag / np.timedelta64(1,'s')
+
+
+# Create a variable for each columns, and generate a new dataframe adding time_lag_seconds
+
+campaign_id = be_uk["Campaign ID"]
+
+event_sub_type = be_uk["Event Sub-Type"]
+
+y_z_new = pd.DataFrame([event_time, interaction_time, campaign_id,  time_lag_seconds, event_sub_type])
+
+y_z_ready = pd.DataFrame.transpose(be_uk_new)
+
+# Give a new column-header-name to each columns
+
+y_z_ready.columns = ['event_time','interaction_time','campaign_id','time_lag','event_sub-type']
+
+# Export the cleaned file and process it in Excel
+
+y_z_ready.to_csv('y_z.csv',index=False)
