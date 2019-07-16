@@ -8,39 +8,32 @@ import numpy as np
 # Import the auto-generated daily activity-log from Google Cloud Storage
 
 
-original_dt_file = pd.read_csv('dcm_advertiserxxxxxxx_xxxxxxx_activity_2019xxxx_2019xxxx_xxxxxx_xxxxxxxxxx.csv.gz', compression='gzip', header=0, sep=',', error_bad_lines = False)        
-original_dt_file.head(5) # check if the file is imported correctly
-
-
-# Extract 5 columns that we need for the incrementality test analysis
-
-
-needed_columns = pd.DataFrame([original_dt_file['Event Time'], original_dt_file['Interaction Time'], original_dt_file['Campaign ID'], original_dt_file['Activity ID'], original_dt_file['Event Sub-Type']]) 
-columns_df = pd.DataFrame.transpose(needed_columns)
+original_dt_file = pd.read_csv('dcm_advertiserxxxxxxx_xxxxxxx_activity_2019xxxx_2019xxxx_xxxxxx_xxxxxxxxxx.csv.gz', compression='gzip', header=0, sep=',', error_bad_lines = False)
+dt_to_df = pd.DataFrame(original_dt_file, columns = ['Event Time', 'Interaction Time', 'Campaign ID', 'Activity ID', 'Event Sub-Type']) 
 
 
 # Extract data for test-campaign and placebo-campaign
 
 
-test_campaign =  columns_df['Campaign ID'] == 21yyyyy32 # filter rows for "test_campaign" using  the boolean variable
-test_campaign_only = columns_df[test_campaign] #filter rows for "test_campaign" using  the boolean expression
-placebo_campaign =  columns_df['Campaign ID'] == 21zzzzz32 
-placebo_campaign_only = columns_df[placebo_campaign] 
-test_and_placebo = pd.concat([test_campaign_only, placebo_campaign_only]) # concatenate 2 campaigns together
+test_campaign =  dt_to_df['Campaign ID'] == 21yyyyy32 # filter rows for "test_campaign" using  the boolean variable
+test_campaign_only = dt_to_df[test_campaign] #filter rows for "test_campaign" using  the boolean expression
+placebo_campaign =  dt_to_df['Campaign ID'] == 21zzzzz32 
+placebo_campaign_only = dt_to_df[placebo_campaign] 
+test_and_placebo = pd.concat([test_campaign_only, placebo_campaign_only])
 
 
 # Extract data for the 4 purchase-activity
 
 
-convo_1 = test_and_placebo["Activity ID"] == 7245096
-convo_2 = test_and_placebo["Activity ID"] == 7305055
-convo_3 = test_and_placebo["Activity ID"] == 7252068
-convo_4 = test_and_placebo["Activity ID"] == 8669579 # Purchase-fastcheckout floodlight, not live yet
+convo_1 = test_and_placebo["Activity ID"] == 7*****6
+convo_2 = test_and_placebo["Activity ID"] == 7*****5
+convo_3 = test_and_placebo["Activity ID"] == 7*****8
+convo_4 = test_and_placebo["Activity ID"] == 8*****9
 convo_1_only = test_and_placebo[convo_1]
 convo_2_only = test_and_placebo[convo_2]
 convo_3_only = test_and_placebo[convo_3]
 convo_4_only = test_and_placebo[convo_4]
-test_and_placebo_convos = pd.concat([convo_1_only, convo_2_only, convo_3_only, convo_4_only]) # concatenate all 4 purchase activities together
+test_and_placebo_convos = pd.concat([convo_1_only, convo_2_only, convo_3_only, convo_4_only])
 
 
 # Calculate the time_lag between event time (when a transaction is generated) and interaction time (when an impression occured)
