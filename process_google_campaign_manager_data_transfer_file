@@ -1,8 +1,8 @@
 # Import Pandas and Numpy
 
 
-import pandas as pd # import pandas
-import numpy as np # import numpy
+import pandas as pd
+import numpy as np
 
 
 # Import the auto-generated daily activity-log from Google Cloud Storage
@@ -15,7 +15,7 @@ original_dt_file.head(5) # check if the file is imported correctly
 # Extract 5 columns that we need for the incrementality test analysis
 
 
-needed_columns = pd.DataFrame([original_dt_file['Event Time'], original_dt_file['Interaction Time'], original_dt_file['Campaign ID'], original_dt_file['Activity ID", original_dt_file['Event Sub-Type']]) #I need 4 columns to prepare the raw_data for the incrementality test: "Event Time", "Campaign ID", "Interaction Time", "Activity ID", "Event Sub-Type". I need to populate these columns from the original file one by one
+needed_columns = pd.DataFrame([original_dt_file['Event Time'], original_dt_file['Interaction Time'], original_dt_file['Campaign ID'], original_dt_file['Activity ID'], original_dt_file['Event Sub-Type']]) 
 columns_df = pd.DataFrame.transpose(needed_columns)
 
 
@@ -40,7 +40,7 @@ convo_1_only = test_and_placebo[convo_1]
 convo_2_only = test_and_placebo[convo_2]
 convo_3_only = test_and_placebo[convo_3]
 convo_4_only = test_and_placebo[convo_4]
-test_and_placebo_convos = pd.concat(test_and_placebo[convo_1_only, convo_2_only, convo_3_only, convo_4_only]) # concatenate all 4 purchase activities together
+test_and_placebo_convos = pd.concat([convo_1_only, convo_2_only, convo_3_only, convo_4_only]) # concatenate all 4 purchase activities together
 
 
 # Calculate the time_lag between event time (when a transaction is generated) and interaction time (when an impression occured)
@@ -49,11 +49,10 @@ test_and_placebo_convos = pd.concat(test_and_placebo[convo_1_only, convo_2_only,
 event_time = pd.to_datetime(test_and_placebo_convos['Event Time'],unit='us') # transform unix code to datetime format
 interaction_time = pd.to_datetime(test_and_placebo_convos['Interaction Time'],unit='us')
 time_lag = (event_time - interaction_time) / np.timedelta64(1,"s") # turn days into seconds
+test_and_placebo_convos['Time Lag'] = time_lag
 
 
-# Create a new dataframe for incrementality test analysis in Excel
+# Export the file for the incrementality test analysis in Excel
 
 
-test_and_placebo_df = pd.DataFrame(test_and_placebo_only["Campaign ID", time_lag, "Event Sub-Type"])
-test_and_placebo_ready = pd.DataFrame.transpose(test_and_placebo_df)
-test_and_placebo_ready.to_csv('test_placebo_date.csv',index=False)
+test_and_placebo_ready.to_csv('test_placebo_date.csv')
