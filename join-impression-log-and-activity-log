@@ -1,0 +1,99 @@
+
+
+import pandas as pd
+
+
+
+imps_0730_1 = pd.read_csv('xxx.csv.gz', compression='gzip', header=0, sep=',', error_bad_lines = False)
+
+
+
+imps_0730_1.shape
+
+
+
+imps_0730 = pd.concat([imps_0730_1, imps_0730_2, imps_0730_3, imps_0730_4, imps_0730_5, imps_0730_6, imps_0730_7, imps_0730_8, imps_0730_9, imps_0730_10, imps_0730_11, imps_0730_12, imps_0730_13, imps_0730_14, imps_0730_15, imps_0730_16, imps_0730_17, imps_0730_18, imps_0730_19, imps_0730_20, imps_0730_21, imps_0730_22, imps_0730_23, imps_0730_24], axis=0)
+
+
+
+imps_0730.shape
+
+
+
+imps_0730 = imps_0730.reset_index(drop=True)
+
+
+imps_0730_us_only = imps_0730['Campaign ID'] == 2xxxxxx7
+
+
+imps_0730_us = imps_0730[imps_0730_us_only]
+
+
+#total impressions of the us_campaign on 07/30
+
+imps_0730_us.shape
+
+
+#how many unique users that us_campaign reached on 07/30
+
+imps_0730_us['User ID'].nunique()
+
+#TO-DO here! Create a subset DataFrame with all known user ('User ID' != 0)
+
+activity_0730 = pd.read_csv('xxx.csv.gz', compression='gzip', header=0, sep=',', error_bad_lines = False)
+
+
+activity_0730_us_only = activity_0730['Campaign ID'] == 2xxxxxx7
+
+
+
+activity_0730_us = activity_0730[activity_0730_us_only]
+
+
+
+activity_0730_us_1_only = activity_0730['Activity ID'] == 7xxxxx6
+activity_0730_us_2_only = activity_0730['Activity ID'] == 7xxxxx5
+activity_0730_us_3_only = activity_0730['Activity ID'] == 7xxxxx8
+activity_0730_us_1 = activity_0730[activity_0730_us_1_only]
+activity_0730_us_2 = activity_0730[activity_0730_us_2_only]
+activity_0730_us_4 = activity_0730[activity_0730_us_3_only]
+
+
+activity_0730_us_trans = pd.concat([activity_0730_us_1, activity_0730_us_2, activity_0730_us_3])
+
+
+#how many transactions happened in us on 0730
+
+activity_0730_us_trans.shape
+
+
+#count unique users who completed the transaction
+
+activity_0730_us_trans['User ID'].nunique()
+
+#TO-DO here! Create a subset DataFrame with all known user ('User ID' != 0)
+
+
+# add a dummy column to activity_0730_us_trans
+activity_0730_us_trans['dummy_col'] = 1
+
+# merge activity_0730_us_trans and imps_0730_us where User-ID are identical
+# use a left join so when imps_0730_us and activity_0730_us_trans match on the user-ID fields
+# the dummy_col will have value of 1, otherwise Null
+results = (
+    imps_0730_us
+    .merge(
+        activity_0730_us_trans[['User ID', 'dummy_col']],
+        left_on='User ID',
+        right_on='User ID',
+        how='left'
+    )
+)
+
+# replace null values (i.e. those where the join did not work) with `
+results['dummy_col'] = results['dummy_col'].fillna(0)
+
+
+
+val = results['dummy_col'].sum() 
+print(val)
