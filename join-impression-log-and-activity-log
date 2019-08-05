@@ -1,89 +1,46 @@
-
-
 import pandas as pd
+import glob
 
 
+# Use glob to extract all files with the same naming convention, and check if all files are processed
 
-imps_0730_1 = pd.read_csv('xxx.csv.gz', compression='gzip', header=0, sep=',', error_bad_lines = False)
-
-
-
-imps_0730_1.shape
+imps_raw_0803 = glob.glob('dcm_advertiser*******_*******_impression_20190803*.csv.gz')
+len(imps_raw_0803)
 
 
+# Write a for-loop to read all the .csv.gz and concatenate them together.
 
-imps_0730 = pd.concat([imps_0730_1, imps_0730_2, imps_0730_3, imps_0730_4, imps_0730_5, imps_0730_6, imps_0730_7, imps_0730_8, imps_0730_9, imps_0730_10, imps_0730_11, imps_0730_12, imps_0730_13, imps_0730_14, imps_0730_15, imps_0730_16, imps_0730_17, imps_0730_18, imps_0730_19, imps_0730_20, imps_0730_21, imps_0730_22, imps_0730_23, imps_0730_24], axis=0)
+df_placeholder = pd.DataFrame()
 
+for eachfile in imps_raw0803:
+    imps_raw_0803 = pd.read_csv(eachfile, compression='gzip', header=0, sep=',', error_bad_lines = False)
+    imps_0803 = pd.concat([df_placeholder,imps_raw_0803])
+    df_placeholder = imps_0803
+   
+   
+# build a new activity_dataframe with transaction-activity only
 
-
-imps_0730.shape
-
-
-
-imps_0730 = imps_0730.reset_index(drop=True)
-
-
-imps_0730_us_only = imps_0730['Campaign ID'] == 2xxxxxx7
-
-
-imps_0730_us = imps_0730[imps_0730_us_only]
+activity_0803.rename(columns = {'Activity ID':'activity_id'}, inplace = True)
+trans_0803 = activity_0803.query('activity_id == xxxxxxx or activity_id == yyyyyyy or activity_id == zzzzzzz')
 
 
-#total impressions of the us_campaign on 07/30
+# how many unique users that are in both activity and impression file
 
-imps_0730_us.shape
-
-
-#how many unique users that us_campaign reached on 07/30
-
-imps_0730_us['User ID'].nunique()
-
-#TO-DO here! Create a subset DataFrame with all known user ('User ID' != 0)
-
-activity_0730 = pd.read_csv('xxx.csv.gz', compression='gzip', header=0, sep=',', error_bad_lines = False)
+len(set(trans_0803['User ID']))
+len(set(imps_0803['User ID']))
+len(set(trans_0803['User ID']) & set(imps_0803['User ID']))
 
 
-activity_0730_us_only = activity_0730['Campaign ID'] == 2xxxxxx7
+# add a dummy column to trans_0803
+trans_0803_['dummy_col'] = 1
 
-
-
-activity_0730_us = activity_0730[activity_0730_us_only]
-
-
-
-activity_0730_us_1_only = activity_0730['Activity ID'] == 7xxxxx6
-activity_0730_us_2_only = activity_0730['Activity ID'] == 7xxxxx5
-activity_0730_us_3_only = activity_0730['Activity ID'] == 7xxxxx8
-activity_0730_us_1 = activity_0730[activity_0730_us_1_only]
-activity_0730_us_2 = activity_0730[activity_0730_us_2_only]
-activity_0730_us_4 = activity_0730[activity_0730_us_3_only]
-
-
-activity_0730_us_trans = pd.concat([activity_0730_us_1, activity_0730_us_2, activity_0730_us_3])
-
-
-#how many transactions happened in us on 0730
-
-activity_0730_us_trans.shape
-
-
-#count unique users who completed the transaction
-
-activity_0730_us_trans['User ID'].nunique()
-
-#TO-DO here! Create a subset DataFrame with all known user ('User ID' != 0)
-
-
-# add a dummy column to activity_0730_us_trans
-activity_0730_us_trans['dummy_col'] = 1
-
-# merge activity_0730_us_trans and imps_0730_us where User-ID are identical
-# use a left join so when imps_0730_us and activity_0730_us_trans match on the user-ID fields
+# merge trans_0803 and imps_0803 where "User ID"s are identical
+# use a left join so when imps_0803 and trans_0803 match on the user-ID fields
 # the dummy_col will have value of 1, otherwise Null
-results = (
-    imps_0730_us
+matched_users_0803 = (
+    imps_0803
     .merge(
-        activity_0730_us_trans[['User ID', 'dummy_col']],
+        trans_0803[['User ID', 'dummy_col']],
         left_on='User ID',
         right_on='User ID',
         how='left'
@@ -91,8 +48,7 @@ results = (
 )
 
 # replace null values (i.e. those where the join did not work) with `
-results['dummy_col'] = results['dummy_col'].fillna(0)
-
+matched_users_0803['dummy_col'] = matched_users_0803['dummy_col'].fillna(0)
 
 
 val = results['dummy_col'].sum() 
